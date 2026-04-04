@@ -7,6 +7,8 @@ struct ProfileView: View {
     @State private var ratings: [Rating] = []
     @State private var gtkmItems: [GetToKnowMeItem] = []
     @State private var loading = true
+    @State private var showGTKMEditor = false
+    @State private var showShelfManager = false
 
     var body: some View {
         NavigationStack {
@@ -25,6 +27,39 @@ struct ProfileView: View {
                             getToKnowMeSection
                         }
 
+                        // Edit buttons (only for own profile)
+                        if authService.currentProfile?.username == username {
+                            HStack(spacing: 12) {
+                                Button {
+                                    showGTKMEditor = true
+                                } label: {
+                                    Label("Get to Know Me", systemImage: "square.stack.3d.up")
+                                        .font(.caption)
+                                        .foregroundStyle(Theme.accent)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 8)
+                                        .background(Theme.card)
+                                        .clipShape(Capsule())
+                                        .overlay(Capsule().stroke(Theme.border))
+                                }
+
+                                Button {
+                                    showShelfManager = true
+                                } label: {
+                                    Label("Shelves", systemImage: "books.vertical")
+                                        .font(.caption)
+                                        .foregroundStyle(Theme.accent)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 8)
+                                        .background(Theme.card)
+                                        .clipShape(Capsule())
+                                        .overlay(Capsule().stroke(Theme.border))
+                                }
+                            }
+                            .padding(.horizontal)
+                            .padding(.bottom, 16)
+                        }
+
                         // Collection (record shelf)
                         if !ratings.isEmpty {
                             collectionSection
@@ -40,6 +75,12 @@ struct ProfileView: View {
                         .font(.system(size: 24, weight: .regular, design: .serif))
                         .foregroundStyle(.white)
                 }
+            }
+            .sheet(isPresented: $showGTKMEditor) {
+                GetToKnowMeEditor()
+            }
+            .sheet(isPresented: $showShelfManager) {
+                ShelfManagerView()
             }
         }
         .task {

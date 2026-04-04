@@ -6,7 +6,7 @@ class MusicService {
     static let shared = MusicService()
 
     // Update to your Vercel deployment URL
-    private let baseURL = "https://euterpy-web.vercel.app"
+    let baseURL = "https://euterpy-web.vercel.app"
 
     struct AlbumSearchResult: Codable, Identifiable {
         let appleId: String
