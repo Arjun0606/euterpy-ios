@@ -5,19 +5,11 @@ struct StarRatingView: View {
     var size: CGFloat = 14
 
     var body: some View {
-        HStack(spacing: 1) {
-            let fullStars = Int(score)
-            let hasHalf = score.truncatingRemainder(dividingBy: 1) != 0
-
-            ForEach(0..<fullStars, id: \.self) { _ in
-                Image(systemName: "star.fill")
+        HStack(spacing: 2) {
+            ForEach(1...5, id: \.self) { i in
+                Image(systemName: i <= Int(score.rounded()) ? "star.fill" : "star")
                     .font(.system(size: size))
-                    .foregroundStyle(Theme.accent)
-            }
-            if hasHalf {
-                Image(systemName: "star.leadinghalf.filled")
-                    .font(.system(size: size))
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(i <= Int(score.rounded()) ? Theme.accent : Theme.border)
             }
         }
     }
@@ -28,20 +20,16 @@ struct StarRatingPicker: View {
     var size: CGFloat = 32
 
     var body: some View {
-        HStack(spacing: 4) {
-            ForEach(1...10, id: \.self) { i in
-                let value = Double(i) / 2.0
-                let isFilled = value <= score
-
+        HStack(spacing: 8) {
+            ForEach(1...5, id: \.self) { i in
                 Button {
                     withAnimation(.easeInOut(duration: 0.15)) {
-                        score = score == value ? 0 : value
+                        score = score == Double(i) ? 0 : Double(i)
                     }
                 } label: {
-                    Text("★")
+                    Image(systemName: Double(i) <= score ? "star.fill" : "star")
                         .font(.system(size: size))
-                        .foregroundStyle(isFilled ? Theme.accent : Theme.border)
-                        .scaleEffect(i % 2 == 1 ? 0.7 : 1.0)
+                        .foregroundStyle(Double(i) <= score ? Theme.accent : Theme.border)
                 }
                 .sensoryFeedback(.selection, trigger: score)
             }
