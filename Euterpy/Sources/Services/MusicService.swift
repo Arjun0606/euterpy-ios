@@ -5,8 +5,8 @@ import Foundation
 class MusicService {
     static let shared = MusicService()
 
-    // TODO: Update to production URL
-    private let baseURL = "https://euterpy.app"
+    // Update to your Vercel deployment URL
+    private let baseURL = "https://euterpy-web.vercel.app"
 
     struct AlbumSearchResult: Codable, Identifiable {
         let appleId: String

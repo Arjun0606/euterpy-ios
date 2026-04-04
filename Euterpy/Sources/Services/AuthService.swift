@@ -9,8 +9,8 @@ class AuthService {
     var currentProfile: Profile?
 
     private let supabase = SupabaseClient(
-        supabaseURL: URL(string: "YOUR_SUPABASE_URL")!,
-        supabaseKey: "YOUR_SUPABASE_ANON_KEY"
+        supabaseURL: URL(string: "https://xnnfbhjxcrlryjrmgtcv.supabase.co")!,
+        supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhubmZiaGp4Y3Jscnlqcm1ndGN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMDA4MDQsImV4cCI6MjA5MDg3NjgwNH0.uyze-Le3OPmVrQmnoZcE3W9NuTWTCyYNgSjgaE2Ue3g"
     )
 
     init() {
