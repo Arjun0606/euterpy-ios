@@ -1,0 +1,46 @@
+# Swift / SPM
+.build/
+.swiftpm/
+Package.resolved
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+
+# Xcode
+DerivedData/
+xcuserdata/
+*.xcuserstate
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Carthage / CocoaPods (we don't use these but just in case)
+Carthage/Build/
+Pods/
+
+# CI build artifacts
+build/
+
+# macOS noise
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local secrets — never commit these
+*.xcconfig.local
+.env
+.env.*
+!.env.example
+
+# Tests
+*.coverage
+*.profraw
+*.profdata
