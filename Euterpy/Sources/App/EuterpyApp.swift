@@ -2,80 +2,80 @@ import SwiftUI
 
 /// Euterpy iOS — entry point.
 ///
-/// This is Session 0 of the rebuild. The v1 codebase is preserved
-/// on the `archive/v1` branch and is no longer the source of truth.
-/// Everything from this point forward is built on the design system
-/// in `Theme/`, the routing layer in `Routing/` (coming Session 1),
-/// and the repository / service architecture in `Repositories/` and
-/// `Services/` (coming Session 1).
+/// Session 1 is live: real auth, real components, real navigation
+/// scaffolding, four-tab native shell. The placeholder welcome
+/// screen from Session 0 has been replaced by the real RootView,
+/// which routes between AuthFlowView (signed out) and MainTabBar
+/// (signed in) based on the AuthService state.
 ///
-/// The visible behavior in Session 0 is intentionally minimal: a
-/// single magazine-styled welcome screen that proves the foundation
-/// builds and runs. The point of Session 0 is to ship the
-/// scaffolding, not the features. Features start in Session 1.
+/// Two long-lived services are constructed once at app launch and
+/// passed down via the SwiftUI environment so every view can read
+/// them with `@Environment(AuthService.self)` and
+/// `@Environment(AppCoordinator.self)`:
+///
+///   - AuthService: the auth state machine. Owns currentUserId,
+///     currentProfile, sign-in / sign-up / sign-out, and the
+///     long-running listener for token refresh + remote sign-out.
+///
+///   - AppCoordinator: the navigation router. Holds one
+///     NavigationPath per tab and routes Routes into the right one.
+///
+/// Universal links from `https://euterpy.com/...` are intercepted
+/// by `.onOpenURL` on the root scene and parsed into Routes via
+/// `DeepLinkHandler`. The coordinator handles the rest.
 @main
 struct EuterpyApp: App {
+    @State private var authService: AuthService
+    @State private var coordinator = AppCoordinator()
+
+    init() {
+        // Start listening to auth state changes immediately. The
+        // listener owns the source of truth for "is the user
+        // signed in," so it must be live before any view tries to
+        // read `authService.state`.
+        let auth = AuthService()
+        auth.start()
+        _authService = State(initialValue: auth)
+    }
+
     var body: some Scene {
         WindowGroup {
-            FoundationWelcomeScreen()
+            RootView()
+                .environment(authService)
+                .environment(coordinator)
                 .preferredColorScheme(.dark)
+                .onOpenURL { url in
+                    if let route = DeepLinkHandler.route(from: url) {
+                        coordinator.navigate(to: route)
+                    }
+                }
         }
     }
 }
 
-/// The Session 0 placeholder. Replaced in Session 1 by the real
-/// auth flow + main tab structure. Exists so the project compiles,
-/// runs, and gives a visual proof that the design system is wired.
-private struct FoundationWelcomeScreen: View {
+/// Routes between the auth flow and the main tab bar based on
+/// AuthService state. Single source of truth for "what does the
+/// user see right now."
+struct RootView: View {
+    @Environment(AuthService.self) private var authService
+
     var body: some View {
         ZStack {
-            EuterpyColor.background
-                .ignoresSafeArea()
+            EuterpyColor.background.ignoresSafeArea()
 
-            // Soft accent glow at the top — the same gradient flourish
-            // the web uses on hero sections. Subtle but signature.
-            RadialGradient(
-                colors: [
-                    EuterpyColor.accent.opacity(0.18),
-                    .clear,
-                ],
-                center: .top,
-                startRadius: 0,
-                endRadius: 400
-            )
-            .ignoresSafeArea()
-            .allowsHitTesting(false)
-
-            VStack(alignment: .leading, spacing: EuterpySpacing.lg) {
-                Text("— A new beginning")
-                    .eyebrowStyle()
-
-                Text("Euterpy.")
-                    .font(EuterpyTypography.editorialHero)
-                    .foregroundStyle(EuterpyColor.foreground)
-                    .tracking(-1.8)
-
-                Text("A music identity. Being rebuilt — properly this time.")
-                    .font(EuterpyTypography.bodyLarge)
-                    .foregroundStyle(EuterpyColor.muted)
-                    .italic()
-
-                Spacer()
-
-                VStack(alignment: .leading, spacing: EuterpySpacing.xs) {
-                    Text("Session 0 · The foundation")
-                        .font(EuterpyTypography.eyebrow)
-                        .foregroundStyle(EuterpyColor.mutedDeep)
-                        .textCase(.uppercase)
-                        .tracking(1.8)
-
-                    Text("Theme system, design tokens, scaffolding. Features start in Session 1.")
-                        .font(EuterpyTypography.caption)
-                        .foregroundStyle(EuterpyColor.mutedDeepest)
-                }
+            switch authService.state {
+            case .loading:
+                ProgressView()
+                    .progressViewStyle(.circular)
+                    .tint(EuterpyColor.accent)
+            case .signedIn:
+                MainTabBar()
+                    .transition(.opacity)
+            case .signedOut:
+                AuthFlowView()
+                    .transition(.opacity)
             }
-            .padding(EuterpySpacing.xl)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
+        .animation(.easeInOut(duration: 0.25), value: authService.state)
     }
 }
